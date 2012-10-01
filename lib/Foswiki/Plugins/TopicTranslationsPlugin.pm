@@ -170,7 +170,8 @@ sub handleTranslations {
     my $missingFormat = Foswiki::Func::extractNameValuePair($params, "missingformat") || $format;
     
     # other stuff:
-    my $userSeparator = Foswiki::Func::extractNameValuePair($params, "separator") || " ";
+    # Ticket #654
+    my $userSeparator = Foswiki::Func::extractNameValuePair($params, "separator") || "\n";
 
     # 
     my $theTopic = Foswiki::Func::extractNameValuePair($params) || Foswiki::Func::extractNameValuePair($params,"topic") || $topic;
