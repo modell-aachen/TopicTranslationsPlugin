@@ -151,7 +151,7 @@ sub currentLanguage {
 # language is the default one
 sub currentLanguageSuffix {
   my $lang = currentLanguage();
-  return ($lang eq $defaultLanguage) ? '' : '-' . normalizeLanguageName($lang);
+  return ($lang eq $defaultLanguage) ? '' : normalizeLanguageName($lang);
 }
 
 # list the translations of the current topic (or to that one passed as an
@@ -196,8 +196,9 @@ sub handleTranslations {
     }
  
     # list translations
+    my $suffixSeparator = Foswiki::Func::getPreferencesValue("TOPICTRANSLATIONS_SEPARATOR") || '-';
     foreach $lang (@whichTranslations) {
-        $norm = ($lang eq $defaultLanguage)?'':normalizeLanguageName($lang);
+        $norm = ($lang eq $defaultLanguage)?'':$suffixSeparator.normalizeLanguageName($lang);
         $result .= $separator;
         $separator = $userSeparator;
         $result .= formatTranslationEntry($baseTopicName, $theWeb, $baseTopicName . $norm, $lang, $format, $missingFormat);
