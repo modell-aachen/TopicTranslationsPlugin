@@ -116,8 +116,7 @@ sub commonTagsHandler {
 sub normalizeLanguageName {
     my $lang = shift;
     $lang =~ s/[_-]//g;
-    $lang =~ s/^(.)(.*)$/\u$1\u$2/;
-    return $lang;
+    return uc $lang;
 }
 
 # finds the base topic name, i.e., the topic name without any language suffix.
