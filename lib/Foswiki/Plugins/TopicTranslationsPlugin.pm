@@ -23,6 +23,7 @@ use vars qw(
     @translations
     $defaultLanguage
     $redirectMethod
+    $suffixSeparator
     $userLanguage
     $acceptor
 );
@@ -60,6 +61,7 @@ sub initPlugin {
     chomp $trans;
     @translations = split(/,\s*/,$trans);
     $redirectMethod = Foswiki::Func::getPreferencesValue("REDIRECTMETHOD") || Foswiki::Func::getPluginPreferencesValue("REDIRECTMETHOD") || "http";
+    $suffixSeparator = Foswiki::Func::getPreferencesValue("TOPICTRANSLATIONS_SEPARATOR") || '-';
     $userLanguage = Foswiki::Func::getPreferencesValue("LANGUAGE") || "en";    
 
     # first listed language is the default one:
@@ -125,7 +127,7 @@ sub normalizeLanguageName {
 sub findBaseTopicName {
     my $base = shift || $topic;
     foreach $lang (@translations) {
-        $norm = normalizeLanguageName($lang);
+        $norm = $suffixSeparator . normalizeLanguageName($lang);
         if ($base =~ m/$norm$/) {
             $base =~ s/$norm$//;
         }
@@ -139,7 +141,7 @@ sub currentLanguage {
     my $theTopic = shift || $topic;
     my $norm;
     foreach $lang (@translations) {
-        $norm = normalizeLanguageName($lang);
+        $norm = $suffixSeparator . normalizeLanguageName($lang);
         if ($theTopic =~ m/$norm$/) {
             return $lang;
         }
@@ -194,9 +196,8 @@ sub handleTranslations {
     } else {
         @whichTranslations = @translations;
     }
- 
+
     # list translations
-    my $suffixSeparator = Foswiki::Func::getPreferencesValue("TOPICTRANSLATIONS_SEPARATOR") || '-';
     foreach $lang (@whichTranslations) {
         $norm = ($lang eq $defaultLanguage)?'':$suffixSeparator.normalizeLanguageName($lang);
         $result .= $separator;
@@ -242,7 +243,7 @@ sub handleIncludeTranslation {
     $theTopic = findBaseTopicName($theTopic);
 
     if ($theLang ne $defaultLanguage) {
-        $theTopic .= normalizeLanguageName($theLang);
+        $theTopic .= $suffixSeparator . normalizeLanguageName($theLang);
     }
 
     # undef is ok, meaning current revision:
@@ -306,7 +307,7 @@ sub checkRedirection {
             # we don't need to redirect if we are already in the best translation:
             if (($current ne $best)) {
               # actually do the redirect:
-              my $bestTranslationTopic = findBaseTopicName() . (($best eq $defaultLanguage)?'':(normalizeLanguageName($best)));
+              my $bestTranslationTopic = findBaseTopicName() . (($best eq $defaultLanguage)?'':($suffixSeparator . normalizeLanguageName($best)));
               my $url = Foswiki::Func::getViewUrl($web,$bestTranslationTopic);
               Foswiki::Func::redirectCgiQuery($query, $url);
             }
@@ -341,7 +342,7 @@ sub findTranslations {
 
     foreach $lang (@translations) {
         # the suffix is empty in the case of the default language:
-        $norm = ($lang eq $defaultLanguage)?(""):(normalizeLanguageName($lang));
+        $norm = ($lang eq $defaultLanguage)?(""):($suffixSeparator . normalizeLanguageName($lang));
         
         # is that translation available?
         $exists = Foswiki::Func::topicExists($web, $theTopic . $norm);
