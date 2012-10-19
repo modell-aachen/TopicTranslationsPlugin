@@ -116,7 +116,7 @@ sub commonTagsHandler {
 sub normalizeLanguageName {
     my $lang = shift;
     $lang =~ s/[_-]//g;
-    $lang =~ s/^(.)(.*)$/\u$1\L$2/;
+    $lang =~ s/^(.)(.*)$/\u$1\u$2/;
     return $lang;
 }
 
@@ -152,7 +152,7 @@ sub currentLanguage {
 # language is the default one
 sub currentLanguageSuffix {
   my $lang = currentLanguage();
-  return ($lang eq $defaultLanguage) ? '' : normalizeLanguageName($lang);
+  return ($lang eq $defaultLanguage) ? '' : '-' . normalizeLanguageName($lang);
 }
 
 # list the translations of the current topic (or to that one passed as an
