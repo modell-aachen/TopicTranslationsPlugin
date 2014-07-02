@@ -76,7 +76,8 @@ sub initPlugin {
     }
 
     # must I redirect to the best available translation?
-    my $mustRedirect = (Foswiki::Func::getPreferencesValue("DISABLE_AUTOMATIC_REDIRECTION") ne 'yes');
+    my $mustRedirectPref = Foswiki::Func::getPreferencesValue("DISABLE_AUTOMATIC_REDIRECTION");
+    my $mustRedirect = (not (defined $mustRedirectPref && $mustRedirectPref eq 'yes'));
     checkRedirection() if $mustRedirect;
 
     # Plugin correctly initialized
