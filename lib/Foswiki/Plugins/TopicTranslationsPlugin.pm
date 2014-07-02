@@ -80,6 +80,16 @@ sub initPlugin {
     my $mustRedirect = (not (defined $mustRedirectPref && $mustRedirectPref eq 'yes'));
     checkRedirection() if $mustRedirect;
 
+    # Copy/Paste/Modify from MetaCommentPlugin
+    # SMELL: this is not reliable as it depends on plugin order
+    # if (Foswiki::Func::getContext()->{SolrPluginEnabled}) {
+    if ($Foswiki::cfg{Plugins}{SolrPlugin}{Enabled}) {
+      require Foswiki::Plugins::SolrPlugin;
+      Foswiki::Plugins::SolrPlugin::registerIndexTopicHandler(
+        \&indexTopicHandler
+      );
+    }
+
     # Plugin correctly initialized
     Foswiki::Func::writeDebug( "- Foswiki::Plugins::${pluginName}::initPlugin( $web.$topic ) is OK" ) if $debug;
     return 1;
@@ -368,6 +378,68 @@ sub handleTranslateMessage {
   my $params = shift;
   my $lang = currentLanguage();
   return (Foswiki::Func::extractNameValuePair($params, $lang));
+}
+
+sub indexTopicHandler {
+    my ($indexer, $doc, $web, $topic, $meta, $text) = @_;
+
+    my @savedTranslations = @translations;
+    { # scope
+        my $trans = Foswiki::Func::getPreferencesValue("TOPICTRANSLATIONS", $web) || Foswiki::Func::getPluginPreferencesValue("TOPICTRANSLATIONS") || "en";
+        chomp $trans;
+        my @tmptranslations = split(/,\s*/,$trans);
+        return unless scalar @tmptranslations;
+        @translations = @tmptranslations;
+    }
+
+    my $savedSeparator = $suffixSeparator;
+    $suffixSeparator = Foswiki::Func::getPreferencesValue("TOPICTRANSLATIONS_SEPARATOR", $web) || '-';
+
+    my $savedDefaultLanguage = $defaultLanguage;
+    $defaultLanguage = $translations[0];
+
+    my $baseTopic = findBaseTopicName($topic);
+
+    my $ownLang;
+    my @translated = ();
+    my @translatedSuffix = ();
+    my @untranslated = ();
+    my @untranslatedSuffix = ();
+    foreach my $lang (@translations) {
+        # the suffix is empty in the case of the default language:
+        $norm = ($lang eq $defaultLanguage)?(""):($suffixSeparator . normalizeLanguageName($lang));
+        my $translated = $baseTopic.$norm;
+
+        # Is that us? Is that translation available?
+        if($topic eq $translated) {
+            $ownLang = $lang;
+            $exists = 1;
+        } else {
+            $exists = Foswiki::Func::topicExists($web, $translated);
+        }
+
+        if($exists) {
+            push(@translated, $lang);
+            push(@translatedSuffix, $norm);# if $norm;
+        } else {
+            push(@untranslated, $lang);
+            push(@untranslatedSuffix, $norm);# if $norm;
+        }
+    }
+
+    return unless $ownLang; # Translation no longer used
+    my %index = ();
+    $index{translated_lst} = \@translated;
+    $index{translated_suffix_lst} = \@translatedSuffix;
+    $index{untranslated_lst} = \@untranslated;
+    $index{untranslated_suffix_lst} = \@untranslatedSuffix;
+    $index{translation_s} = $ownLang;
+    $index{basetopic_s} = $baseTopic;
+    $doc->add_fields( %index );
+
+    @translations = @savedTranslations;
+    $defaultLanguage = $savedDefaultLanguage;
+    $suffixSeparator = $savedSeparator;
 }
 
 # =========================
