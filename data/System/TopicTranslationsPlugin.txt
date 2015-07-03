@@ -180,6 +180,12 @@ Plugin settings are stored as preferences variables. To reference a plugin setti
    * Method used for detect language when redirecting (See "Automatic Redirection" above):
       * Set REDIRECTMETHOD = http
 
+   * Separator added/expected between topic base name and language suffix (defaults to '-'):
+      * Set TOPICTRANSLATIONS_SEPARATOR = -
+
+   * Turn off all-uppercase suffixes in favour of titlecase (capitalized) suffix:
+      * Set TOPICTRANSLATIONS_UPPERCASE_SUFFIX = 0
+
 ---++ Plugin Installation Instructions
 
 __Note:__ You do not need to install anything on the browser to use this plugin. The following instructions are for the administrator who installs the plugin on the server where Foswiki is running. 
