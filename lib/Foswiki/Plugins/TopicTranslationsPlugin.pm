@@ -24,6 +24,7 @@ use vars qw(
     $defaultLanguage
     $redirectMethod
     $suffixSeparator
+    $suffixUpcase
     $userLanguage
     $acceptor
 );
@@ -62,6 +63,7 @@ sub initPlugin {
     @translations = split(/,\s*/,$trans);
     $redirectMethod = Foswiki::Func::getPreferencesValue("REDIRECTMETHOD") || Foswiki::Func::getPluginPreferencesValue("REDIRECTMETHOD") || "http";
     $suffixSeparator = Foswiki::Func::getPreferencesValue("TOPICTRANSLATIONS_SEPARATOR") || '-';
+    $suffixUpcase = Foswiki::Func::getPreferencesValue("TOPICTRANSLATIONS_UPPERCASE_SUFFIX") || '1';
     $userLanguage = Foswiki::Func::getPreferencesValue("LANGUAGE") || "en";    
 
     # first listed language is the default one:
@@ -129,7 +131,7 @@ sub commonTagsHandler {
 sub normalizeLanguageName {
     my $lang = shift;
     $lang =~ s/[_-]//g;
-    return uc $lang;
+    return Foswiki::isTrue($suffixUpcase) ? uc($lang) : ucfirst($lang);
 }
 
 # finds the base topic name, i.e., the topic name without any language suffix.
