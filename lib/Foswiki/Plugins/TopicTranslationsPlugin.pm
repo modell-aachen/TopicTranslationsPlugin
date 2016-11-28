@@ -104,7 +104,7 @@ sub beforeCommonTagsHandler {
     Foswiki::Func::writeDebug( "- ${pluginName}::beforeCommonTagsHandler( $_[2].$_[1] )" ) if $debug;
 
     # handle all INCLUDETRANSLATION tags:
-    $_[0] =~ s/%INCLUDETRANSLATION{(.*?)}%/&handleIncludeTranslation($1)/ge;
+    $_[0] =~ s/%INCLUDETRANSLATION\{(.*?)\}%/&handleIncludeTranslation($1)/ge;
 }
 
 # =========================
